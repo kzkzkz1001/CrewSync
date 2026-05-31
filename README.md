@@ -1,4 +1,4 @@
-# Smart Catering Fleet & Staff Pickup Platform
+# CrewSync
 
 An intelligent shift scheduling, route optimization, and live pickup coordination platform for event catering companies. The platform helps managers publish shifts, generate optimized pickup routes for food truck drivers, and send real-time arrival alerts to staff during a trip.
 
