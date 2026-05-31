@@ -15,6 +15,7 @@ model User {
   phone     String?
   homeLat   Float?
   homeLng   Float?
+  fcmToken  String?  // Firebase device token, set when staff opens the app
   createdAt DateTime @default(now())
 
   assignedShifts ShiftStaff[]

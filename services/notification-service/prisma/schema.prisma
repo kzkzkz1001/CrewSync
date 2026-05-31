@@ -1,0 +1,57 @@
+// READ-ONLY schema for notification-service.
+// All migrations are managed by shift-service.
+// Do NOT run `prisma migrate` from this service.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/notification-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id
+  fcmToken  String?
+  assignedShifts ShiftStaff[]
+}
+
+model Shift {
+  id        String      @id
+  vehicleId String
+  status    ShiftStatus
+  pickupNodes PickupNode[]
+  staff     ShiftStaff[]
+}
+
+model PickupNode {
+  id          String     @id
+  shiftId     String
+  shift       Shift      @relation(fields: [shiftId], references: [id])
+  lat         Float
+  lng         Float
+  address     String
+  estimatedAt DateTime
+  staff       ShiftStaff[]
+}
+
+model ShiftStaff {
+  shiftId      String
+  userId       String
+  pickupNodeId String?
+  shift        Shift       @relation(fields: [shiftId], references: [id])
+  user         User        @relation(fields: [userId], references: [id])
+  pickupNode   PickupNode? @relation(fields: [pickupNodeId], references: [id])
+
+  @@id([shiftId, userId])
+}
+
+enum ShiftStatus {
+  DRAFT
+  OPTIMIZED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
