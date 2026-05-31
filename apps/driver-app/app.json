@@ -13,6 +13,14 @@
           "locationAlwaysAndWhenInUsePermission": "CrewSync needs your location to share your position with the team."
         }
       ]
-    ]
+    ],
+    "android": {
+      "config": {
+        "googleMaps": { "apiKey": "YOUR_GOOGLE_MAPS_API_KEY" }
+      }
+    },
+    "extra": {
+      "gatewayUrl": "http://localhost:3000"
+    }
   }
 }
