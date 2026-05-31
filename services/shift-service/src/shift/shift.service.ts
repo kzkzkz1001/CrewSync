@@ -107,6 +107,7 @@ export class ShiftService {
 
     const payload: OptimizeRouteRequest = {
       shiftId,
+      startTime: shift.startTime.toISOString(),
       driverOrigin,
       destination: { lat: shift.destLat, lng: shift.destLng },
       staffLocations,

@@ -63,6 +63,7 @@ export interface GpsPayload {
 
 export interface OptimizeRouteRequest {
   shiftId: string;
+  startTime: string; // ISO 8601 — shift departure time, used to compute per-node ETAs
   driverOrigin: Coordinates;
   destination: Coordinates;
   staffLocations: { staffId: string; location: Coordinates }[];
