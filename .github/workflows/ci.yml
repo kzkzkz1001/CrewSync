@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Type-check shared types
+        run: pnpm --filter @crewsync/types lint
+
+      - name: Type-check gateway
+        run: pnpm --filter @crewsync/gateway build
+
+      - name: Type-check shift-service
+        run: pnpm --filter @crewsync/shift-service build
+
+      - name: Type-check route-engine
+        run: pnpm --filter @crewsync/route-engine build
+
+      - name: Type-check notification-service
+        run: pnpm --filter @crewsync/notification-service build
+
+      - name: VRP unit tests
+        run: pnpm --filter @crewsync/route-engine test
+
+      - name: Type-check web
+        run: pnpm --filter @crewsync/web build
+        env:
+          NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
+          NEXT_PUBLIC_MAPBOX_TOKEN: pk.placeholder

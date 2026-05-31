@@ -1,0 +1,14 @@
+node_modules
+.git
+.github
+**/.next
+**/dist
+**/.turbo
+**/*.log
+.env
+**/*.env
+!.env.example
+**/coverage
+**/.expo
+apps/driver-app
+apps/staff-app

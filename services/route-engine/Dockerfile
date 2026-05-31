@@ -1,21 +1,20 @@
 FROM node:20-alpine AS base
-RUN npm install -g pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-FROM base AS deps
-WORKDIR /app
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
-COPY packages/types/package.json ./packages/types/
-COPY services/route-engine/package.json ./services/route-engine/
-RUN pnpm install --frozen-lockfile
-
+# ── Build stage ───────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm --filter route-engine build
+RUN pnpm install --no-frozen-lockfile
+RUN pnpm --filter @crewsync/route-engine build
+RUN pnpm deploy --filter @crewsync/route-engine --prod /deploy
 
+# ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
-COPY --from=builder /app/services/route-engine/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-CMD ["node", "dist/main"]
+ENV NODE_ENV=production
+COPY --from=builder /deploy .
+EXPOSE 3002
+CMD ["node", "dist/main.js"]

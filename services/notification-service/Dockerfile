@@ -1,21 +1,22 @@
 FROM node:20-alpine AS base
-RUN npm install -g pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-FROM base AS deps
-WORKDIR /app
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
-COPY packages/types/package.json ./packages/types/
-COPY services/notification-service/package.json ./services/notification-service/
-RUN pnpm install --frozen-lockfile
-
+# ── Build stage ───────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm --filter notification-service build
+RUN pnpm install --no-frozen-lockfile
+# Generate the custom-output Prisma client for notification-service
+RUN pnpm --filter @crewsync/notification-service exec prisma generate
+RUN pnpm --filter @crewsync/notification-service build
+RUN pnpm deploy --filter @crewsync/notification-service --prod /deploy
 
+# ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
-COPY --from=builder /app/services/notification-service/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-CMD ["node", "dist/main"]
+ENV NODE_ENV=production
+COPY --from=builder /deploy .
+EXPOSE 3003
+CMD ["node", "dist/main.js"]

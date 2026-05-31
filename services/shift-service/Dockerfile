@@ -1,21 +1,25 @@
 FROM node:20-alpine AS base
-RUN npm install -g pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-FROM base AS deps
-WORKDIR /app
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
-COPY packages/types/package.json ./packages/types/
-COPY services/shift-service/package.json ./services/shift-service/
-RUN pnpm install --frozen-lockfile
-
+# ── Build stage ───────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm --filter shift-service build
+RUN pnpm install --no-frozen-lockfile
+# Generate Prisma client (outputs into node_modules/.prisma/client)
+RUN pnpm --filter @crewsync/shift-service exec prisma generate
+RUN pnpm --filter @crewsync/shift-service build
+RUN pnpm deploy --filter @crewsync/shift-service --prod /deploy
 
+# ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
-COPY --from=builder /app/services/shift-service/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-CMD ["node", "dist/main"]
+ENV NODE_ENV=production
+COPY --from=builder /deploy .
+# Prisma schema needed by migrate deploy at startup
+COPY --from=builder /app/services/shift-service/prisma ./prisma
+EXPOSE 3001
+# Run DB migrations then start the service
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main.js"]
