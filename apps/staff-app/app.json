@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "CrewSync Staff",
+    "slug": "crewsync-staff",
+    "version": "1.0.0",
+    "scheme": "crewsync-staff",
+    "platforms": ["ios", "android"],
+    "plugins": [
+      "expo-router",
+      "expo-notifications"
+    ]
+  }
+}

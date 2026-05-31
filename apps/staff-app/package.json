@@ -1,0 +1,25 @@
+{
+  "name": "@crewsync/staff-app",
+  "version": "0.0.1",
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "eslint app"
+  },
+  "dependencies": {
+    "@crewsync/types": "workspace:*",
+    "expo": "~51.0.0",
+    "expo-router": "~3.5.0",
+    "expo-notifications": "~0.28.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-maps": "1.14.0",
+    "socket.io-client": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/react": "~18.2.0",
+    "typescript": "^5.4.0"
+  }
+}

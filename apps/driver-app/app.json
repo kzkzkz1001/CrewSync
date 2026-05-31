@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "CrewSync Driver",
+    "slug": "crewsync-driver",
+    "version": "1.0.0",
+    "scheme": "crewsync-driver",
+    "platforms": ["ios", "android"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "CrewSync needs your location to share your position with the team."
+        }
+      ]
+    ]
+  }
+}

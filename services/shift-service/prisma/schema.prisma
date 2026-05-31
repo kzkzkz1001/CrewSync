@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      Role
+  phone     String?
+  homeLat   Float?
+  homeLng   Float?
+  createdAt DateTime @default(now())
+
+  assignedShifts ShiftStaff[]
+}
+
+model Vehicle {
+  id          String  @id @default(uuid())
+  plateNumber String  @unique
+  driverId    String
+  shifts      Shift[]
+}
+
+model Shift {
+  id          String      @id @default(uuid())
+  eventName   String
+  destLat     Float
+  destLng     Float
+  status      ShiftStatus @default(DRAFT)
+  startTime   DateTime
+  vehicleId   String
+  vehicle     Vehicle     @relation(fields: [vehicleId], references: [id])
+  staff       ShiftStaff[]
+  pickupNodes PickupNode[]
+  createdAt   DateTime    @default(now())
+}
+
+model ShiftStaff {
+  shiftId   String
+  userId    String
+  shift     Shift  @relation(fields: [shiftId], references: [id])
+  user      User   @relation(fields: [userId], references: [id])
+  pickupNodeId String?
+  pickupNode PickupNode? @relation(fields: [pickupNodeId], references: [id])
+
+  @@id([shiftId, userId])
+}
+
+model PickupNode {
+  id          String      @id @default(uuid())
+  shiftId     String
+  shift       Shift       @relation(fields: [shiftId], references: [id])
+  lat         Float
+  lng         Float
+  address     String
+  estimatedAt DateTime
+  staff       ShiftStaff[]
+}
+
+enum Role {
+  MANAGER
+  DRIVER
+  STAFF
+}
+
+enum ShiftStatus {
+  DRAFT
+  OPTIMIZED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}

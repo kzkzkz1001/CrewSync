@@ -1,0 +1,72 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: crewsync
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: crewsync
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U crewsync']
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 5
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - '3000:3000'
+    env_file: ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  shift-service:
+    build:
+      context: ..
+      dockerfile: services/shift-service/Dockerfile
+    ports:
+      - '3001:3001'
+    env_file: ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  route-engine:
+    build:
+      context: ..
+      dockerfile: services/route-engine/Dockerfile
+    ports:
+      - '3002:3002'
+    env_file: ../.env
+
+  notification-service:
+    build:
+      context: ..
+      dockerfile: services/notification-service/Dockerfile
+    ports:
+      - '3003:3003'
+    env_file: ../.env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
